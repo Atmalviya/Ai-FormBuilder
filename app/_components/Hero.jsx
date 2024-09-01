@@ -2,7 +2,7 @@ import React from 'react'
 
 const Hero = () => {
   return (
-    <div>
+    <div className='top-0'>
         <section className="bg-gray-50">
   <div className="mx-auto max-w-screen-xl px-4 py-32 lg:flex lg:h-screen">
     <div className="mx-auto max-w-xl text-center">
@@ -20,7 +20,7 @@ const Hero = () => {
           className="block w-full rounded bg-primary px-12 py-3 text-sm font-medium text-white shadow hover:bg-orange-600 focus:outline-none focus:ring active:bg-[#ff7a00] sm:w-auto"
           href="#"
         >
-          Get Started
+          + Create Form
         </a>
 
         <a
