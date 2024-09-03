@@ -15,9 +15,21 @@ import { useUser } from "@clerk/nextjs";
 import { db } from "@/configs";
 import { JsonForms } from "@/configs/schema";
 import moment from "moment";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 
-const PROMPT = `, On the basis of description please give form in jsonformat with form title, form subheading with form having Form field, form name, placeholder name, and form label, fieldType, fieldrequired In Json format`;
+const PROMPT = `, Provide a JSON representation of a form based on the given description. The JSON should include the following details:
+- title: The title of the form.
+- subheading: A brief description or subheading for the form.
+- Fields: An array of objects where each object represents a form field. Each field object should include:
+  - name: The HTML name attribute for the field.
+  - label: The label for the field, which will be displayed next to it.
+  - placeholder: The placeholder text for the field, if applicable.
+  - type: The type of field (e.g., "text", "select", "radio", "checkbox").
+  - required: A boolean indicating whether the field is required.
+  - options: For "select", "radio", or "checkbox" fields, an array of options, where each option is an object with "label" and "value" properties.
+  - fieldName: The internal name or identifier for the field, if different from the HTML name attribute.
+Ensure that the JSON is structured to match the standard HTML form elements and types, and that each field type has the appropriate properties.`
 
 const CreateForm = () => {
   const [userInput, setUserInput] = useState("");
@@ -70,7 +82,7 @@ const CreateForm = () => {
                   Cancel
                 </Button>
                 <Button onClick={onCreateForm} disabled={isLoading}>
-                  Create
+                    {isLoading ? <Loader2 className="animate-spin" /> : "Create"}
                 </Button>
               </div>
             </DialogDescription>
