@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -11,10 +11,69 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import FieldEdit from "./FieldEdit";
+import { db } from "@/configs";
+import { userResponses } from "@/configs/schema";
+import moment from "moment";
+import { toast } from "sonner";
 
 const FormUi = ({ jsonFromData, onFieldUpdate, deleteField, setselectedTheme, editable=true }) => {
+  const [fromData, setFromData] = useState();
+  let formRef = useRef();
+
+  useEffect(() => {
+    console.log(jsonFromData);
+  }, []);
+
+  const handleInputChange = (event) => {
+    const {name, value} = event.target
+    setFromData({
+      ...fromData,
+      [name]: value
+    })
+  }
+  const handleSelectChange = (name, value)=> {
+    setFromData({
+      ...fromData,
+      [name]: value
+    })
+  }
+  const handleCheckboxChange = (fieldName, itemName, value) => {
+    const list = fromData?.[fieldName] ? fromData?.[fieldName] : [];
+    if(value){
+      list.push({
+        label: itemName,
+        value: true
+      })
+      setFromData({
+       ...fromData,
+        [fieldName]: list
+      })
+    }else {
+      const result = list.filter(item => item.label == itemName);
+      setFromData({
+        ...fromData,
+        [fieldName]: result
+      })
+    }
+  }
+
+  const onFormSubmit = async(event) => {
+    event.preventDefault();
+    console.log(fromData);
+    try{const res = await db.insert(userResponses).values({
+      jsonResponse: fromData,
+      createdAt: moment().format("DD-MM-YYYY"),
+    });
+    if(res){
+      formRef.reset();
+      toast.success("Form submitted successfully");
+    }} catch(err){
+      console.log(err);
+      toast.error("Something went wrong");
+    }
+  }
   return (
-    <div className="border p-5 md:w-[600px] rounded-lg " data-theme={setselectedTheme}>
+    <form ref={(e)=>formRef=e} className="border p-5 md:w-[600px] rounded-lg " data-theme={setselectedTheme} onSubmit={onFormSubmit}>
       <h2 className="font-bold text-center text-2xl text-primary">
         {jsonFromData?.title}
       </h2>
@@ -27,7 +86,7 @@ const FormUi = ({ jsonFromData, onFieldUpdate, deleteField, setselectedTheme, ed
           {field?.type === "select" ? (
             <div className="my-3 w-full">
               <label className="text-xs text-gray-500">{field?.label}</label>
-              <Select>
+              <Select required={field?.required} onValueChange={(value) => handleSelectChange(field?.name, value)}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder={field?.placeholder} />
                 </SelectTrigger>
@@ -43,10 +102,10 @@ const FormUi = ({ jsonFromData, onFieldUpdate, deleteField, setselectedTheme, ed
           ) : field?.type === "radio" ? (
             <div className="my-3 w-full">
               <label className="text-xs text-gray-500">{field?.label}</label>
-              <RadioGroup>
+              <RadioGroup required={field?.required}>
                 {field?.options?.map((option, index) => (
                   <div className="flex items-center space-x-2" key={index}>
-                    <RadioGroupItem value={option.value} id={option.label} />
+                    <RadioGroupItem value={option.value} id={option.label} name={field?.name} onClick={(value) => handleSelectChange(field?.name, option.value)} />
                     <Label htmlFor={option.value}>{option.label}</Label>
                   </div>
                 ))}
@@ -58,7 +117,7 @@ const FormUi = ({ jsonFromData, onFieldUpdate, deleteField, setselectedTheme, ed
               {field?.options ? (
                 field?.options?.map((option, index) => (
                   <div className="flex items-center gap-2 my-2" key={index}>
-                    <Checkbox />
+                    <Checkbox onCheckedChange={(v)=>handleCheckboxChange(field?.label, option.label, v)}/>
                     <Label htmlFor={option.value}>{option.label}</Label>
                   </div>
                 ))
@@ -77,7 +136,9 @@ const FormUi = ({ jsonFromData, onFieldUpdate, deleteField, setselectedTheme, ed
                 type={field?.type}
                 label={field?.label}
                 placeholder={field?.placeholder}
-                name={field?.fieldName}
+                name={field?.name}
+                required={field?.required}
+                onChange={(e)=>handleInputChange(e)}
               />
             </div>
           )}
@@ -92,8 +153,8 @@ const FormUi = ({ jsonFromData, onFieldUpdate, deleteField, setselectedTheme, ed
           </div>}
         </div>
       ))}
-      <button className="btn btn-primary">Submit</button>
-    </div>
+      <button className="btn btn-primary" type="submit">Submit</button>
+    </form>
   );
 };
 
