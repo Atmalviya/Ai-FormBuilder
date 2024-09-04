@@ -3,11 +3,14 @@ import { Button } from "@/components/ui/button";
 import { SignInButton, UserButton, useUser } from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import React from "react";
 
 const Header = () => {
   const { user, isSignedIn } = useUser();
-  return (
+  const path = usePathname();
+  console.log(path)
+  return !path.includes('aiform')&&(
     // sticky top-0 bg-white z-50
     <div className="p-5 border-b shadow-sm ">
       <div className="flex items-center justify-between">

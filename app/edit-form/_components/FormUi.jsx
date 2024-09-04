@@ -12,7 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import FieldEdit from "./FieldEdit";
 
-const FormUi = ({ jsonFromData, onFieldUpdate, deleteField, setselectedTheme }) => {
+const FormUi = ({ jsonFromData, onFieldUpdate, deleteField, setselectedTheme, editable=true }) => {
   return (
     <div className="border p-5 md:w-[600px] rounded-lg " data-theme={setselectedTheme}>
       <h2 className="font-bold text-center text-2xl text-primary">
@@ -81,7 +81,7 @@ const FormUi = ({ jsonFromData, onFieldUpdate, deleteField, setselectedTheme }) 
               />
             </div>
           )}
-          <div>
+          {editable && <div>
             <FieldEdit
               defaultValue={field}
               onUpdate={(value) => onFieldUpdate(value, index)}
@@ -89,7 +89,7 @@ const FormUi = ({ jsonFromData, onFieldUpdate, deleteField, setselectedTheme }) 
                 deleteField(index);
               }}
             />
-          </div>
+          </div>}
         </div>
       ))}
       <button className="btn btn-primary">Submit</button>
