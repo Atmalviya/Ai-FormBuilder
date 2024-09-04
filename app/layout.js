@@ -16,8 +16,8 @@ export default function RootLayout({ children }) {
     <ClerkProvider >
       <html lang="en" data-theme="light">
         <body className={inter.className}>
+          <Toaster /> 
           <Header />
-          <Toaster />
           {children}
         </body>
       </html> 

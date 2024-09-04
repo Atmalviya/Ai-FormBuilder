@@ -8,12 +8,15 @@ import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import FormUi from "../_components/FormUi";
 import { toast } from "sonner";
+import Controller from "../_components/Controller";
 
 const EditForm = ({ params }) => {
   const { user } = useUser();
   const [jsonFromData, setJsonFromData] = useState([]);
   const [updateTrigger, setUpdateTrigger] = useState();
   const [record, setRecord] = useState([]);
+  const [setselectedTheme, setSetselectedTheme] = useState("light");
+  const [SelectedBackground, setSelectedBackground] = useState();
   const route = useRouter();
 
   useEffect(() => {
@@ -29,8 +32,10 @@ const EditForm = ({ params }) => {
           eq(JsonForms.createdBy, user?.primaryEmailAddress?.emailAddress)
         )
       );
-    console.log(JSON.parse(res[0].jsonform));
+    console.log(res[0]);
     setRecord(res[0]);
+    setSetselectedTheme(res[0].theme);
+    setSelectedBackground(res[0].background);
     setJsonFromData(JSON.parse(res[0].jsonform));
   };
 
@@ -70,7 +75,22 @@ const EditForm = ({ params }) => {
           eq(JsonForms.createdBy, user?.primaryEmailAddress?.emailAddress)
         )
       );
-      toast.success("Form updated successfully")
+    toast.success("Form updated successfully");
+  };
+
+  const updateControllerFields = async (value, columnNamw) => {
+    const res = await db
+      .update(JsonForms)
+      .set({
+        [columnNamw]: value,
+      })
+      .where(
+        and(
+          eq(JsonForms.id, record.id),
+          eq(JsonForms.createdBy, user?.primaryEmailAddress?.emailAddress)
+        )
+      );
+    toast.success("Form updated successfully");
   };
 
   return (
@@ -82,9 +102,24 @@ const EditForm = ({ params }) => {
         <ArrowLeft /> Back
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="p-5 border rounded-lg shadow-md ">Controller</div>
-        <div className="md:col-span-2 border rounded-lg p-5 flex items-center justify-center">
+        <div className="p-5 border rounded-lg shadow-md ">
+          <Controller
+            selectedTheme={(value) => {
+              setSetselectedTheme(value);
+              updateControllerFields(value, "theme");
+            }}
+            selectedBackground={(value) => {
+              setSelectedBackground(value);
+              updateControllerFields(value, "background");
+            }}
+          />
+        </div>
+        <div
+          className="md:col-span-2 border rounded-lg p-5 flex items-center justify-center"
+          style={{ backgroundImage: SelectedBackground }}
+        >
           <FormUi
+            setselectedTheme={setselectedTheme}
             jsonFromData={jsonFromData}
             onFieldUpdate={onFieldUpdate}
             deleteField={(index) => onDeleteField(index)}
