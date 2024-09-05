@@ -17,8 +17,9 @@ import moment from "moment";
 import { toast } from "sonner";
 
 const FormUi = ({ jsonFromData, onFieldUpdate, deleteField, setselectedTheme, editable=true }) => {
-  const [fromData, setFromData] = useState();
-  let formRef = useRef();
+  const [formData, setFormData] = useState({});
+  const formRef = useRef(null);
+  const [formKey, setFormKey] = useState(0); // Add this line
 
   useEffect(() => {
     console.log(jsonFromData);
@@ -26,32 +27,34 @@ const FormUi = ({ jsonFromData, onFieldUpdate, deleteField, setselectedTheme, ed
 
   const handleInputChange = (event) => {
     const {name, value} = event.target
-    setFromData({
-      ...fromData,
+    setFormData({
+      ...formData,
       [name]: value
     })
   }
-  const handleSelectChange = (name, value)=> {
-    setFromData({
-      ...fromData,
+
+  const handleSelectChange = (name, value) => {
+    setFormData({
+      ...formData,
       [name]: value
     })
   }
+
   const handleCheckboxChange = (fieldName, itemName, value) => {
-    const list = fromData?.[fieldName] ? fromData?.[fieldName] : [];
+    const list = formData?.[fieldName] ? formData?.[fieldName] : [];
     if(value){
       list.push({
         label: itemName,
         value: true
       })
-      setFromData({
-       ...fromData,
+      setFormData({
+       ...formData,
         [fieldName]: list
       })
     }else {
-      const result = list.filter(item => item.label == itemName);
-      setFromData({
-        ...fromData,
+      const result = list.filter(item => item.label !== itemName);
+      setFormData({
+        ...formData,
         [fieldName]: result
       })
     }
@@ -59,21 +62,30 @@ const FormUi = ({ jsonFromData, onFieldUpdate, deleteField, setselectedTheme, ed
 
   const onFormSubmit = async(event) => {
     event.preventDefault();
-    console.log(fromData);
-    try{const res = await db.insert(userResponses).values({
-      jsonResponse: fromData,
-      createdAt: moment().format("DD-MM-YYYY"),
-    });
-    if(res){
-      formRef.reset();
-      toast.success("Form submitted successfully");
-    }} catch(err){
+    console.log(formData);
+    try {
+      const res = await db.insert(userResponses).values({
+        jsonResponse: formData,
+        createdAt: moment().format("DD-MM-YYYY"),
+      });
+      if(res){
+        // Reset the form state
+        setFormData({});
+        // Reset the form fields
+        if (formRef.current) {
+          formRef.current.reset();
+        }
+        // Force re-render of Select components
+        setFormKey(prevKey => prevKey + 1);
+        toast.success("Form submitted successfully");
+      }
+    } catch(err){
       console.log(err);
       toast.error("Something went wrong");
     }
   }
   return (
-    <form ref={(e)=>formRef=e} className="border p-5 md:w-[600px] rounded-lg " data-theme={setselectedTheme} onSubmit={onFormSubmit}>
+    <form ref={formRef} className="border p-5 md:w-[600px] rounded-lg " data-theme={setselectedTheme} onSubmit={onFormSubmit}>
       <h2 className="font-bold text-center text-2xl text-primary">
         {jsonFromData?.title}
       </h2>
@@ -86,7 +98,12 @@ const FormUi = ({ jsonFromData, onFieldUpdate, deleteField, setselectedTheme, ed
           {field?.type === "select" ? (
             <div className="my-3 w-full">
               <label className="text-xs text-gray-500">{field?.label}</label>
-              <Select required={field?.required} onValueChange={(value) => handleSelectChange(field?.name, value)}>
+              <Select
+                key={`${formKey}-${field.name}`} // Add this line
+                required={field?.required}
+                onValueChange={(value) => handleSelectChange(field?.name, value)}
+                value={formData[field?.name] || ""}
+              >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder={field?.placeholder} />
                 </SelectTrigger>
