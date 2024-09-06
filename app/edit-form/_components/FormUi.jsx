@@ -16,7 +16,7 @@ import { userResponses } from "@/configs/schema";
 import moment from "moment";
 import { toast } from "sonner";
 
-const FormUi = ({ jsonFromData, onFieldUpdate, deleteField, setselectedTheme, editable=true }) => {
+const FormUi = ({ jsonFromData, onFieldUpdate, deleteField, setselectedTheme, editable=true, formId=0 }) => {
   const [formData, setFormData] = useState({});
   const formRef = useRef(null);
   const [formKey, setFormKey] = useState(0); // Add this line
@@ -67,6 +67,7 @@ const FormUi = ({ jsonFromData, onFieldUpdate, deleteField, setselectedTheme, ed
       const res = await db.insert(userResponses).values({
         jsonResponse: formData,
         createdAt: moment().format("DD-MM-YYYY"),
+        formRef: formId,
       });
       if(res){
         // Reset the form state
