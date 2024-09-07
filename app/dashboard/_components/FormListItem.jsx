@@ -23,8 +23,6 @@ import { toast } from "sonner";
 const FormListItem = ({ jsonForm, formRecords, refreshData }) => {
   const { user } = useUser();
   const onDeleteForm = async () => {
-    console.log(jsonForm);
-    console.log(jsonForm.id, formRecords.id);
     try {
       const res = await db
         .delete(JsonForms)
@@ -34,14 +32,12 @@ const FormListItem = ({ jsonForm, formRecords, refreshData }) => {
             eq(JsonForms.createdBy, user?.primaryEmailAddress?.emailAddress)
           )
         );
-      console.log(res);
       if (res) {
         toast.success("Form deleted successfully!");
         refreshData();
       }
     } catch (err) {
       toast.error("Something went wrong. Please try again later.");
-      console.log(err);
     }
   };
   return (
@@ -85,7 +81,6 @@ const FormListItem = ({ jsonForm, formRecords, refreshData }) => {
             url: process.env.NEXT_PUBLIC_BASR_URL + `/aiform/${formRecords.id}`,
             title: jsonForm?.title,
           }}
-          onClick={() => console.log("shared successfully!")}
         >
           <Button variant="outline" className="flex gap-2" size="sm">
             {" "}

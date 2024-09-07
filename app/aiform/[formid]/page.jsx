@@ -29,10 +29,10 @@ const LiveAiForm = ({ params }) => {
         <FormUi
           jsonFromData={jsonFromData}
           onFieldUpdate={() => {
-            console.log("fieldupdate");
+            console.log();
           }}
           deleteField={() => {
-            console.log("deletefield");
+            console.log();
           }}
           setselectedTheme={record?.theme}
           editable={false}

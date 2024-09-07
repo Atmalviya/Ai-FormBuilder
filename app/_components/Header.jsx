@@ -9,7 +9,6 @@ import React from "react";
 const Header = () => {
   const { user, isSignedIn } = useUser();
   const path = usePathname();
-  console.log(path)
   return !path.includes('aiform')&&(
     // sticky top-0 bg-white z-50
     <div className="p-5 border-b shadow-sm ">
