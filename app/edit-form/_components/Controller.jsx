@@ -9,8 +9,9 @@ import {
 import themes from "@/app/_theme/Themes";
 import GradientBg from "@/app/_theme/GradientBg";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 
-const Controller = ({selectedTheme, selectedBackground}) => {
+const Controller = ({selectedTheme, selectedBackground, EnableSignin}) => {
     const [showMore, setShowMore] = useState(6)
   return (
     <div>
@@ -60,6 +61,10 @@ const Controller = ({selectedTheme, selectedBackground}) => {
         ))}
       </div>
         <Button variant="ghost" className="w-full my-1" size="sm" onClick={() => setShowMore(showMore>6 ? 6 : 200)}>{showMore > 6 ?  "Show less" : "Show more" }</Button>
+        <div className="flex flex-row gap-3 items-center justify-center">
+          <Checkbox onCheckedChange={(e) => EnableSignin(e)} />
+          <h2>Only signed in user can fill the form</h2>
+        </div> 
     </div>
   );
 };

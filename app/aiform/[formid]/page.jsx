@@ -37,6 +37,7 @@ const LiveAiForm = ({ params }) => {
           setselectedTheme={record?.theme}
           editable={false}
           formId={record?.id}
+          enableSignin={record?.enableSignIn}
         />
       )}
     </div>

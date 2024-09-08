@@ -15,15 +15,15 @@ import { db } from "@/configs";
 import { userResponses } from "@/configs/schema";
 import moment from "moment";
 import { toast } from "sonner";
+import { useUser, isSignedIn, SignInButton } from "@clerk/nextjs";
+import { Button } from "@/components/ui/button";
 
-const FormUi = ({ jsonFromData, onFieldUpdate, deleteField, setselectedTheme, editable=true, formId=0 }) => {
+const FormUi = ({ jsonFromData, onFieldUpdate, deleteField, setselectedTheme, editable=true, formId=0, enableSignin=false }) => {
   const [formData, setFormData] = useState({});
   const formRef = useRef(null);
-  const [formKey, setFormKey] = useState(0); // Add this line
+  const [formKey, setFormKey] = useState(0); 
+  const {user, isSignedIn} = useUser()
 
-  useEffect(() => {
-    console.log(jsonFromData);
-  }, []);
 
   const handleInputChange = (event) => {
     const {name, value} = event.target
@@ -62,7 +62,6 @@ const FormUi = ({ jsonFromData, onFieldUpdate, deleteField, setselectedTheme, ed
 
   const onFormSubmit = async(event) => {
     event.preventDefault();
-    console.log(formData);
     try {
       const res = await db.insert(userResponses).values({
         jsonResponse: formData,
@@ -70,13 +69,11 @@ const FormUi = ({ jsonFromData, onFieldUpdate, deleteField, setselectedTheme, ed
         formRef: formId,
       });
       if(res){
-        // Reset the form state
         setFormData({});
-        // Reset the form fields
         if (formRef.current) {
           formRef.current.reset();
         }
-        // Force re-render of Select components
+        
         setFormKey(prevKey => prevKey + 1);
         toast.success("Form submitted successfully");
       }
@@ -100,7 +97,7 @@ const FormUi = ({ jsonFromData, onFieldUpdate, deleteField, setselectedTheme, ed
             <div className="my-3 w-full">
               <label className="text-xs text-gray-500">{field?.label}</label>
               <Select
-                key={`${formKey}-${field.name}`} // Add this line
+                key={`${formKey}-${field.name}`} 
                 required={field?.required}
                 onValueChange={(value) => handleSelectChange(field?.name, value)}
                 value={formData[field?.name] || ""}
@@ -171,7 +168,18 @@ const FormUi = ({ jsonFromData, onFieldUpdate, deleteField, setselectedTheme, ed
           </div>}
         </div>
       ))}
-      <button className="btn btn-primary" type="submit">Submit</button>
+      {enableSignin ? 
+      <div>
+      {isSignedIn ? <Button className="btn btn-primary" type="submit">Submit</Button> : 
+          <Button className="" onClick={(e) =>e.preventDefault() }>
+            <SignInButton mode="modal">
+              Sign In First
+            </SignInButton>
+        </Button>
+        }  
+        </div> :
+      <Button className="btn btn-primary" type="submit">Submit</Button>
+      }
     </form>
   );
 };

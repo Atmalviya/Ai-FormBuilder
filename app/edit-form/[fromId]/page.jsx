@@ -3,7 +3,7 @@ import { db } from "@/configs";
 import { JsonForms } from "@/configs/schema";
 import { useUser } from "@clerk/nextjs";
 import { and, eq } from "drizzle-orm";
-import { ArrowLeft, Share2, SquareArrowOutUpRight } from "lucide-react";
+import { ArrowLeft, Loader2, Share2, SquareArrowOutUpRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import FormUi from "../_components/FormUi";
@@ -20,12 +20,15 @@ const EditForm = ({ params }) => {
   const [record, setRecord] = useState([]);
   const [setselectedTheme, setSetselectedTheme] = useState("light");
   const [SelectedBackground, setSelectedBackground] = useState();
+  const [enableSignin, setEnableSignin] = useState(false);
+  const [loading, setLoading] = useState(false)
   const route = useRouter();
 
   useEffect(() => {
     user && getFormData();
   }, [user]);
   const getFormData = async () => {
+    setLoading(true)
     const res = await db
       .select()
       .from(JsonForms)
@@ -35,11 +38,13 @@ const EditForm = ({ params }) => {
           eq(JsonForms.createdBy, user?.primaryEmailAddress?.emailAddress)
         )
       );
-    console.log(res[0]);
-    setRecord(res[0]);
-    setSetselectedTheme(res[0].theme);
-    setSelectedBackground(res[0].background);
-    setJsonFromData(JSON.parse(res[0].jsonform));
+    if(res.length > 0){
+      setLoading(false)
+      setRecord(res[0]);
+      setSetselectedTheme(res[0].theme);
+      setSelectedBackground(res[0].background);
+      setJsonFromData(JSON.parse(res[0].jsonform));
+    }
   };
 
   useEffect(() => {
@@ -50,10 +55,8 @@ const EditForm = ({ params }) => {
   }, [updateTrigger]);
 
   const onFieldUpdate = (value, index) => {
-    console.log(jsonFromData);
     jsonFromData.fields[index].label = value.label;
     jsonFromData.fields[index].placeholder = value.placeholder;
-    console.log(jsonFromData);
     setUpdateTrigger(Date.now());
   };
 
@@ -61,7 +64,6 @@ const EditForm = ({ params }) => {
     const res = jsonFromData.fields.filter(
       (item, index) => index !== indexToRemove
     );
-    console.log(res);
     jsonFromData.fields = res;
     setUpdateTrigger(Math.random());
   };
@@ -95,7 +97,6 @@ const EditForm = ({ params }) => {
       );
     toast.success("Form updated successfully");
   };
-  console.log(jsonFromData)
 
   return (
     <div className="p-10">
@@ -136,6 +137,7 @@ const EditForm = ({ params }) => {
               onClick={() => {
                 updateControllerFields(setselectedTheme, "theme");
                 updateControllerFields(SelectedBackground, "background");
+                updateControllerFields(enableSignin, "enableSignIn");
               }}
             >
               Save changes
@@ -148,11 +150,14 @@ const EditForm = ({ params }) => {
             selectedBackground={(value) => {
               setSelectedBackground(value);
             }}
+            EnableSignin={(value) => {
+              setEnableSignin(value)
+            }}
           />
         </div>
 
         {/* Form UI */}
-        <div
+        {loading ? <Loader2 className="h-10 w-10 animate-spin" /> : <div
           className="md:col-span-2 border rounded-lg p-5 flex items-center justify-center"
           style={{ backgroundImage: SelectedBackground }}
         >
@@ -162,7 +167,7 @@ const EditForm = ({ params }) => {
             onFieldUpdate={onFieldUpdate}
             deleteField={(index) => onDeleteField(index)}
           />
-        </div>
+        </div>}
       </div>
     </div>
   );
